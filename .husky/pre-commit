@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Load nvm
+export NVM_DIR="$HOME/.nvm"
+# shellcheck disable=SC1091
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Verify that node is available
+command -v node >/dev/null 2>&1 || {
+  echo >&2 "Node.js is required but it's not installed. Aborting."
+  exit 1
+}
+
+# Format staged files with prettier
+# shellcheck disable=SC2046
+prettier $(git diff --cached --name-only --diff-filter=ACMR) --write --ignore-unknown
+
+# Update index
+git update-index --again
+
+# Sign the commit (if necessary)
+if ! git config --get commit.gpgSign; then
+  git config --global commit.gpgSign true
+fi
